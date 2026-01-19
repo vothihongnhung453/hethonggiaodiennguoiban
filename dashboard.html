@@ -2,61 +2,101 @@
 <html lang="vi">
 <head>
 <meta charset="UTF-8">
-<title>Đối Soát COD</title>
+<title>Đối Soát Thu Hộ COD</title>
+<meta name="viewport" content="width=device-width, initial-scale=1">
 <style>
 body{margin:0;font-family:Arial;background:#f4f6f9;}
-.layout{display:flex;min-height:100vh;}
+.layout{display:flex;min-height:100vh}
+
+/* SIDEBAR */
 .sidebar{
-  width:230px;
-  background:linear-gradient(#3c5d99,#2a4a7b);
+  width:240px;
+  background:linear-gradient(#3b5c94,#2a4574);
   color:#fff;
 }
-.sidebar h2{padding:16px;margin:0;}
+.sidebar h2{
+  margin:0;padding:18px;font-size:18px;
+  background:rgba(0,0,0,.15)
+}
 .menu a{
-  display:block;
-  padding:12px 16px;
+  display:flex;
+  gap:10px;
+  padding:14px 18px;
   color:#fff;
   text-decoration:none;
 }
-.menu a:hover,.active{background:rgba(255,255,255,.15);}
-.main{flex:1;padding:20px;}
-.filters{
-  background:#fff;
-  padding:15px;
-  border-radius:6px;
+.menu a.active,.menu a:hover{
+  background:rgba(255,255,255,.15)
 }
-input,select{padding:8px;margin-right:6px;}
+
+/* MAIN */
+.main{flex:1;padding:24px}
+h1{margin-top:0}
+
+/* FILTER */
+.filter-box{
+  background:#fff;
+  padding:16px;
+  border-radius:8px;
+  box-shadow:0 2px 6px rgba(0,0,0,.05)
+}
+.row{display:flex;gap:12px;flex-wrap:wrap;margin-bottom:12px}
+input,select,button{
+  padding:8px 10px;font-size:14px
+}
+button.search{
+  background:#2fa84f;color:#fff;border:none
+}
+button.excel{
+  background:#3b7ddd;color:#fff;border:none
+}
+
+/* TABLE */
 table{
   width:100%;
   border-collapse:collapse;
-  background:#fff;
-  margin-top:15px;
+  margin-top:18px;
+  background:#fff
 }
 th,td{
   border:1px solid #ddd;
   padding:10px;
-  text-align:center;
+  text-align:center
 }
-.status.ok{background:#28a745;color:#fff;padding:4px 8px;border-radius:4px;}
-.status.err{background:#dc3545;color:#fff;padding:4px 8px;border-radius:4px;}
-.status.warn{background:#ffc107;padding:4px 8px;border-radius:4px;}
+th{background:#eef1f6}
+tr:hover{background:#f6f9ff;cursor:pointer}
+
+.badge{
+  padding:5px 10px;
+  border-radius:4px;
+  color:#fff;
+  font-size:13px;
+}
+.ok{background:#28a745}
+.err{background:#dc3545}
+.warn{background:#ffc107;color:#333}
+
+/* DETAIL */
 .detail{
-  margin-top:20px;
+  margin-top:22px;
   background:#fff;
-  padding:15px;
-  border-radius:6px;
+  padding:18px;
+  border-radius:8px;
+  display:flex;
+  justify-content:space-between;
 }
-button.action{
-  display:block;
-  width:220px;
-  margin-top:10px;
+.detail-info p{margin:6px 0}
+.detail-actions button{
+  width:240px;
+  margin-bottom:10px;
   padding:10px;
   border:none;
   color:#fff;
+  font-size:14px
 }
-.done{background:#28a745;}
-.complain{background:#007bff;}
-.print{background:#6c757d;}
+.done{background:#28a745}
+.complain{background:#3b7ddd}
+.print{background:#6c757d}
 </style>
 </head>
 <body>
@@ -68,81 +108,111 @@ if(localStorage.getItem("auth")!=="1"){
 </script>
 
 <div class="layout">
+  <!-- SIDEBAR -->
   <div class="sidebar">
-    <h2>Tên Shop</h2>
+    <h2>🔒 Tên Shop</h2>
     <div class="menu">
-      <a href="orders.html">Quản lý đơn hàng</a>
-      <a class="active">Đối soát COD</a>
-      <a href="#" onclick="logout()">Đăng xuất</a>
+      <a href="orders.html">📦 Quản lý đơn hàng</a>
+      <a class="active">💰 Đối soát COD</a>
+      <a href="#" onclick="logout()">🚪 Đăng xuất</a>
     </div>
   </div>
 
+  <!-- MAIN -->
   <div class="main">
     <h1>Đối Soát Thu Hộ COD</h1>
 
-    <div class="filters">
-      <input id="search" placeholder="Mã đơn / Mã vận đơn">
-      <select id="status">
-        <option value="">Tất cả trạng thái</option>
-        <option>Đã khớp</option>
-        <option>Chênh lệch</option>
-        <option>Chưa đối soát</option>
-      </select>
-      <button onclick="render()">Tìm kiếm</button>
+    <!-- FILTER -->
+    <div class="filter-box">
+      <div class="row">
+        <label>Từ ngày <input type="date" id="from" value="2024-04-01"></label>
+        <label>Đến ngày <input type="date" id="to" value="2024-04-10"></label>
+      </div>
+
+      <div class="row">
+        <label><input type="checkbox" id="f1" checked> Chưa đối soát</label>
+        <label><input type="checkbox" id="f2" checked> Đã đối soát</label>
+        <label><input type="checkbox" id="f3" checked> Có chênh lệch</label>
+      </div>
+
+      <div class="row">
+        <input id="search" placeholder="Mã đơn hàng / Mã vận đơn" style="flex:1">
+        <button class="search" onclick="render()">🔍 Tìm kiếm</button>
+        <button class="excel">⬇ Excel</button>
+      </div>
     </div>
 
+    <!-- TABLE -->
     <table>
       <thead>
         <tr>
-          <th>STT</th><th>Mã đơn</th><th>Tiền COD</th>
-          <th>Đã thu</th><th>Phí ship</th>
-          <th>Chênh lệch</th><th>Trạng thái</th>
+          <th>STT</th>
+          <th>Mã đơn</th>
+          <th>Tiền COD</th>
+          <th>Đã thu</th>
+          <th>Phí ship</th>
+          <th>Chênh lệch</th>
+          <th>Trạng thái</th>
         </tr>
       </thead>
       <tbody id="tbody"></tbody>
     </table>
 
-    <div class="detail" id="detail">Chọn đơn để xem chi tiết</div>
+    <!-- DETAIL -->
+    <div class="detail" id="detail">
+      <div class="detail-info">
+        <h3>Chi tiết đối soát</h3>
+        <p>Chọn 1 đơn trong bảng</p>
+      </div>
+    </div>
+
   </div>
 </div>
 
 <script>
 const data=[
- {id:"DH001",cod:500000,thu:500000,ship:30000,diff:0,status:"Đã khớp"},
- {id:"DH002",cod:250000,thu:250000,ship:25000,diff:-50000,status:"Chênh lệch"},
+ {id:"DH001",cod:500000,thu:500000,ship:30000,diff:0,status:"Đã đối soát"},
+ {id:"DH002",cod:250000,thu:250000,ship:25000,diff:-50000,status:"Có chênh lệch"},
  {id:"DH003",cod:400000,thu:0,ship:20000,diff:400000,status:"Chưa đối soát"},
 ];
 
+function statusClass(s){
+ if(s==="Đã đối soát") return "ok";
+ if(s==="Có chênh lệch") return "err";
+ return "warn";
+}
+
 function render(){
  tbody.innerHTML="";
- const k=search.value.toLowerCase();
- const s=status.value;
- data.filter(d=>
-  d.id.toLowerCase().includes(k) &&
-  (s===""||d.status===s)
- ).forEach((d,i)=>{
-  tbody.innerHTML+=`
-  <tr onclick="show('${d.id}')">
-   <td>${i+1}</td>
-   <td>${d.id}</td>
-   <td>${d.cod.toLocaleString()}</td>
-   <td>${d.thu.toLocaleString()}</td>
-   <td>${d.ship.toLocaleString()}</td>
-   <td>${d.diff.toLocaleString()}</td>
-   <td><span class="status ${d.status==='Đã khớp'?'ok':d.status==='Chênh lệch'?'err':'warn'}">${d.status}</span></td>
-  </tr>`;
+ const key=search.value.toLowerCase();
+ data.filter(d=>d.id.toLowerCase().includes(key))
+ .forEach((d,i)=>{
+   tbody.innerHTML+=`
+   <tr onclick="showDetail('${d.id}')">
+     <td>${i+1}</td>
+     <td>${d.id}</td>
+     <td>${d.cod.toLocaleString()}</td>
+     <td>${d.thu.toLocaleString()}</td>
+     <td>${d.ship.toLocaleString()}</td>
+     <td>${d.diff.toLocaleString()}</td>
+     <td><span class="badge ${statusClass(d.status)}">${d.status}</span></td>
+   </tr>`;
  });
 }
 
-function show(id){
+function showDetail(id){
  detail.innerHTML=`
- <h3>Chi tiết đối soát</h3>
- <p><b>Mã đơn:</b> ${id}</p>
- <p><b>Shipper:</b> Nguyễn Văn B</p>
- <p><b>SĐT:</b> 0945 678 910</p>
- <button class="action done">✔ Xác nhận hoàn thành</button>
- <button class="action complain">⚠ Tạo khiếu nại</button>
- <button class="action print">🖨 In biên bản</button>`;
+ <div class="detail-info">
+   <h3>Chi tiết đối soát</h3>
+   <p><b>Mã đơn:</b> ${id}</p>
+   <p><b>Shipper:</b> Nguyễn Văn B</p>
+   <p><b>SĐT:</b> 0945 678 910</p>
+ </div>
+ <div class="detail-actions">
+   <button class="done">✔ Xác nhận hoàn thành</button>
+   <button class="complain">⚠ Tạo khiếu nại</button>
+   <button class="print">🖨 In biên bản</button>
+ </div>`;
 }
 
 function logout(){
