@@ -1,0 +1,50 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+<meta charset="UTF-8">
+<title>Quản lý đơn hàng</title>
+<style>
+body{font-family:Arial;background:#f4f6f9;padding:20px;}
+table{width:100%;background:#fff;border-collapse:collapse;}
+th,td{border:1px solid #ddd;padding:10px;text-align:center;}
+</style>
+</head>
+<body>
+
+<h2>Quản lý đơn hàng</h2>
+<input id="search" placeholder="Mã đơn">
+<select id="status">
+  <option value="">Tất cả</option>
+  <option>Đang vận chuyển</option>
+  <option>Đã giao</option>
+</select>
+<button onclick="render()">Lọc</button>
+
+<table>
+<thead><tr><th>Mã đơn</th><th>Trạng thái</th></tr></thead>
+<tbody id="tbody"></tbody>
+</table>
+
+<script>
+const orders=[
+ {id:"DH001",status:"Đang vận chuyển"},
+ {id:"DH002",status:"Đã giao"},
+ {id:"DH003",status:"Đang vận chuyển"},
+];
+
+function render(){
+ tbody.innerHTML="";
+ const k=search.value.toLowerCase();
+ const s=status.value;
+ orders.filter(o=>
+  o.id.toLowerCase().includes(k) &&
+  (s===""||o.status===s)
+ ).forEach(o=>{
+  tbody.innerHTML+=`<tr><td>${o.id}</td><td>${o.status}</td></tr>`;
+ });
+}
+render();
+</script>
+
+</body>
+</html>
