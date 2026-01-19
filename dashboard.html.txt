@@ -1,0 +1,127 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+<meta charset="UTF-8">
+<title>Dashboard người bán</title>
+<style>
+  body { margin:0; font-family: Arial; background:#f8fafc; }
+  header { background:#1f2937; color:white; padding:15px; }
+  .layout { display:flex; }
+  nav {
+    width:220px;
+    background:#111827;
+    color:white;
+    min-height:100vh;
+  }
+  nav a {
+    display:block;
+    padding:12px;
+    color:white;
+    text-decoration:none;
+  }
+  nav a:hover { background:#2563eb; }
+  main { flex:1; padding:20px; }
+
+  input { padding:8px; width:300px; }
+  table {
+    width:100%;
+    border-collapse: collapse;
+    background:white;
+    margin-top:15px;
+  }
+  th, td {
+    border:1px solid #ddd;
+    padding:10px;
+    text-align:center;
+  }
+  tr:hover { background:#f1f5f9; cursor:pointer; }
+</style>
+</head>
+<body>
+
+<header>
+  <h2>Hệ thống người bán</h2>
+</header>
+
+<div class="layout">
+  <nav>
+    <a href="#" onclick="showOrders()">📦 Quản lý đơn hàng</a>
+    <a href="#" onclick="showCOD()">💰 Đối soát COD</a>
+    <a href="#" onclick="logout()">🚪 Đăng xuất</a>
+  </nav>
+
+  <main>
+    <h3 id="title">Quản lý đơn hàng</h3>
+    <input id="search" placeholder="Tìm mã đơn / người nhận" onkeyup="render()">
+
+    <table>
+      <thead>
+        <tr>
+          <th>Mã đơn</th>
+          <th>Người nhận</th>
+          <th>Trạng thái</th>
+          <th>COD</th>
+        </tr>
+      </thead>
+      <tbody id="table"></tbody>
+    </table>
+  </main>
+</div>
+
+<script>
+if (localStorage.getItem("loggedIn") !== "true") {
+  window.location.href = "index.html";
+}
+
+let mode = "orders";
+
+const data = [
+  {id:"DH001", name:"Nguyễn Văn A", status:"Đang giao", cod:"Chưa thu"},
+  {id:"DH002", name:"Trần Thị B", status:"Đã giao", cod:"Đã thu"},
+  {id:"DH003", name:"Lê Văn C", status:"Chênh lệch", cod:"Chưa đối soát"},
+];
+
+function showOrders() {
+  mode = "orders";
+  title.innerText = "Quản lý đơn hàng";
+  render();
+}
+
+function showCOD() {
+  mode = "cod";
+  title.innerText = "Đối soát COD";
+  render();
+}
+
+function render() {
+  const keyword = search.value.toLowerCase();
+  table.innerHTML = "";
+
+  data.filter(d =>
+    (mode === "orders" || d.cod !== "") &&
+    (d.id.toLowerCase().includes(keyword) || d.name.toLowerCase().includes(keyword))
+  ).forEach(d => {
+    table.innerHTML += `
+      <tr onclick="viewDetail('${d.id}')">
+        <td>${d.id}</td>
+        <td>${d.name}</td>
+        <td>${d.status}</td>
+        <td>${d.cod}</td>
+      </tr>`;
+  });
+}
+
+function viewDetail(id) {
+  alert("Bạn đã chọn đơn: " + id);
+}
+
+function logout() {
+  localStorage.removeItem("loggedIn");
+  window.location.href = "index.html";
+}
+
+render();
+</script>
+
+</body>
+</html>
