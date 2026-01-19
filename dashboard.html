@@ -2,124 +2,153 @@
 <html lang="vi">
 <head>
 <meta charset="UTF-8">
-<title>Dashboard người bán</title>
+<title>Đối Soát COD</title>
 <style>
-  body { margin:0; font-family: Arial; background:#f8fafc; }
-  header { background:#1f2937; color:white; padding:15px; }
-  .layout { display:flex; }
-  nav {
-    width:220px;
-    background:#111827;
-    color:white;
-    min-height:100vh;
-  }
-  nav a {
-    display:block;
-    padding:12px;
-    color:white;
-    text-decoration:none;
-  }
-  nav a:hover { background:#2563eb; }
-  main { flex:1; padding:20px; }
-
-  input { padding:8px; width:300px; }
-  table {
-    width:100%;
-    border-collapse: collapse;
-    background:white;
-    margin-top:15px;
-  }
-  th, td {
-    border:1px solid #ddd;
-    padding:10px;
-    text-align:center;
-  }
-  tr:hover { background:#f1f5f9; cursor:pointer; }
+body{margin:0;font-family:Arial;background:#f4f6f9;}
+.layout{display:flex;min-height:100vh;}
+.sidebar{
+  width:230px;
+  background:linear-gradient(#3c5d99,#2a4a7b);
+  color:#fff;
+}
+.sidebar h2{padding:16px;margin:0;}
+.menu a{
+  display:block;
+  padding:12px 16px;
+  color:#fff;
+  text-decoration:none;
+}
+.menu a:hover,.active{background:rgba(255,255,255,.15);}
+.main{flex:1;padding:20px;}
+.filters{
+  background:#fff;
+  padding:15px;
+  border-radius:6px;
+}
+input,select{padding:8px;margin-right:6px;}
+table{
+  width:100%;
+  border-collapse:collapse;
+  background:#fff;
+  margin-top:15px;
+}
+th,td{
+  border:1px solid #ddd;
+  padding:10px;
+  text-align:center;
+}
+.status.ok{background:#28a745;color:#fff;padding:4px 8px;border-radius:4px;}
+.status.err{background:#dc3545;color:#fff;padding:4px 8px;border-radius:4px;}
+.status.warn{background:#ffc107;padding:4px 8px;border-radius:4px;}
+.detail{
+  margin-top:20px;
+  background:#fff;
+  padding:15px;
+  border-radius:6px;
+}
+button.action{
+  display:block;
+  width:220px;
+  margin-top:10px;
+  padding:10px;
+  border:none;
+  color:#fff;
+}
+.done{background:#28a745;}
+.complain{background:#007bff;}
+.print{background:#6c757d;}
 </style>
 </head>
 <body>
 
-<header>
-  <h2>Hệ thống người bán</h2>
-</header>
+<script>
+if(localStorage.getItem("auth")!=="1"){
+  location.href="index.html";
+}
+</script>
 
 <div class="layout">
-  <nav>
-    <a href="#" onclick="showOrders()">📦 Quản lý đơn hàng</a>
-    <a href="#" onclick="showCOD()">💰 Đối soát COD</a>
-    <a href="#" onclick="logout()">🚪 Đăng xuất</a>
-  </nav>
+  <div class="sidebar">
+    <h2>Tên Shop</h2>
+    <div class="menu">
+      <a href="orders.html">Quản lý đơn hàng</a>
+      <a class="active">Đối soát COD</a>
+      <a href="#" onclick="logout()">Đăng xuất</a>
+    </div>
+  </div>
 
-  <main>
-    <h3 id="title">Quản lý đơn hàng</h3>
-    <input id="search" placeholder="Tìm mã đơn / người nhận" onkeyup="render()">
+  <div class="main">
+    <h1>Đối Soát Thu Hộ COD</h1>
+
+    <div class="filters">
+      <input id="search" placeholder="Mã đơn / Mã vận đơn">
+      <select id="status">
+        <option value="">Tất cả trạng thái</option>
+        <option>Đã khớp</option>
+        <option>Chênh lệch</option>
+        <option>Chưa đối soát</option>
+      </select>
+      <button onclick="render()">Tìm kiếm</button>
+    </div>
 
     <table>
       <thead>
         <tr>
-          <th>Mã đơn</th>
-          <th>Người nhận</th>
-          <th>Trạng thái</th>
-          <th>COD</th>
+          <th>STT</th><th>Mã đơn</th><th>Tiền COD</th>
+          <th>Đã thu</th><th>Phí ship</th>
+          <th>Chênh lệch</th><th>Trạng thái</th>
         </tr>
       </thead>
-      <tbody id="table"></tbody>
+      <tbody id="tbody"></tbody>
     </table>
-  </main>
+
+    <div class="detail" id="detail">Chọn đơn để xem chi tiết</div>
+  </div>
 </div>
 
 <script>
-if (localStorage.getItem("loggedIn") !== "true") {
-  window.location.href = "index.html";
-}
-
-let mode = "orders";
-
-const data = [
-  {id:"DH001", name:"Nguyễn Văn A", status:"Đang giao", cod:"Chưa thu"},
-  {id:"DH002", name:"Trần Thị B", status:"Đã giao", cod:"Đã thu"},
-  {id:"DH003", name:"Lê Văn C", status:"Chênh lệch", cod:"Chưa đối soát"},
+const data=[
+ {id:"DH001",cod:500000,thu:500000,ship:30000,diff:0,status:"Đã khớp"},
+ {id:"DH002",cod:250000,thu:250000,ship:25000,diff:-50000,status:"Chênh lệch"},
+ {id:"DH003",cod:400000,thu:0,ship:20000,diff:400000,status:"Chưa đối soát"},
 ];
 
-function showOrders() {
-  mode = "orders";
-  title.innerText = "Quản lý đơn hàng";
-  render();
+function render(){
+ tbody.innerHTML="";
+ const k=search.value.toLowerCase();
+ const s=status.value;
+ data.filter(d=>
+  d.id.toLowerCase().includes(k) &&
+  (s===""||d.status===s)
+ ).forEach((d,i)=>{
+  tbody.innerHTML+=`
+  <tr onclick="show('${d.id}')">
+   <td>${i+1}</td>
+   <td>${d.id}</td>
+   <td>${d.cod.toLocaleString()}</td>
+   <td>${d.thu.toLocaleString()}</td>
+   <td>${d.ship.toLocaleString()}</td>
+   <td>${d.diff.toLocaleString()}</td>
+   <td><span class="status ${d.status==='Đã khớp'?'ok':d.status==='Chênh lệch'?'err':'warn'}">${d.status}</span></td>
+  </tr>`;
+ });
 }
 
-function showCOD() {
-  mode = "cod";
-  title.innerText = "Đối soát COD";
-  render();
+function show(id){
+ detail.innerHTML=`
+ <h3>Chi tiết đối soát</h3>
+ <p><b>Mã đơn:</b> ${id}</p>
+ <p><b>Shipper:</b> Nguyễn Văn B</p>
+ <p><b>SĐT:</b> 0945 678 910</p>
+ <button class="action done">✔ Xác nhận hoàn thành</button>
+ <button class="action complain">⚠ Tạo khiếu nại</button>
+ <button class="action print">🖨 In biên bản</button>`;
 }
 
-function render() {
-  const keyword = search.value.toLowerCase();
-  table.innerHTML = "";
-
-  data.filter(d =>
-    (mode === "orders" || d.cod !== "") &&
-    (d.id.toLowerCase().includes(keyword) || d.name.toLowerCase().includes(keyword))
-  ).forEach(d => {
-    table.innerHTML += `
-      <tr onclick="viewDetail('${d.id}')">
-        <td>${d.id}</td>
-        <td>${d.name}</td>
-        <td>${d.status}</td>
-        <td>${d.cod}</td>
-      </tr>`;
-  });
+function logout(){
+ localStorage.removeItem("auth");
+ location.href="index.html";
 }
-
-function viewDetail(id) {
-  alert("Bạn đã chọn đơn: " + id);
-}
-
-function logout() {
-  localStorage.removeItem("loggedIn");
-  window.location.href = "index.html";
-}
-
 render();
 </script>
 
